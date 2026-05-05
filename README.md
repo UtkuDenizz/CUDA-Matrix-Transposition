@@ -38,4 +38,4 @@ Our experiments show that decreasing `TILE_DIM` from 32 to 16 for a 2048x1024 ma
 ### How to Run:
 ```bash
 nvcc -o transpose transpose.cu
-./transpose
+transpose
