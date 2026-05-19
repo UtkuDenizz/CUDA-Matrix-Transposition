@@ -11,7 +11,7 @@ __global__ void transposeNaive(float *in, float *out, int rows, int cols) {
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (x < cols && y < rows) {
-        // yazma işlemi "strided" (atlamalı) olduğu için yavaştır
+        // strided write (atlamalı yazma) - slow 
         out[x * rows + y] = in[y * cols + x];
     }
 }
@@ -24,17 +24,17 @@ __global__ void transposeOptimized(float *in, float *out, int rows, int cols) {
     int x = blockIdx.x * TILE_DIM + threadIdx.x;
     int y = blockIdx.y * TILE_DIM + threadIdx.y;
 
-    //  global hafizadan shared memory e okum,a (yan yana threadler yan yana okur - coalesced)
+    //  read from global memory to shared memory  (yan yana threadler yan yana okur - coalesced)
     if (x < cols && y < rows)
         tile[threadIdx.y][threadIdx.x] = in[y * cols + x];
 
-    __syncthreads(); // tüm threadlerin yazmayı bitirdiğinden emin ol
+    __syncthreads(); // make sure all the threads are finished writing 
 
-    // transpoz koordinatlarını hesapla - blokları döndür
+    // calculate transposed coordinates and rotate blocks
     x = blockIdx.y * TILE_DIM + threadIdx.x; 
     y = blockIdx.x * TILE_DIM + threadIdx.y;
 
-    // shared memory den global hafızaya yazma (yan yana threadler yan yana yazar - coalesced)
+    // write from shared memory to global memory (yan yana threadler yan yana yazar - coalesced)
     if (x < rows && y < cols)
         out[y * rows + x] = tile[threadIdx.x][threadIdx.y];
 }
@@ -43,8 +43,8 @@ int main() {
     int size = ROWS * COLS * sizeof(float);
     float *data_in, *data_out;
 
-    // 2.kisim-  unified memory (cudaMallocManaged)
-    // hem cpu hem gpu bu adresi kullanabilir
+    // 2. section -  unified memory (cudaMallocManaged)
+    // cpu and gpu can use this adress
     cudaMallocManaged(&data_in, size);
     cudaMallocManaged(&data_out, size);
 
