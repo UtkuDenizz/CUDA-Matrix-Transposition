@@ -18,7 +18,6 @@ __global__ void transposeNaive(float *in, float *out, int rows, int cols) {
 
 // optimized gpu kernel - fast
 __global__ void transposeOptimized(float *in, float *out, int rows, int cols) {
-    // hafiza bankasi çakışmalarını (bank conflicts) önlemek için +1 eklenebilir [TILE_DIM][TILE_DIM+1]
     __shared__ float tile[TILE_DIM][TILE_DIM];
 
     int x = blockIdx.x * TILE_DIM + threadIdx.x;
