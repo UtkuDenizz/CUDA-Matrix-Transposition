@@ -11,7 +11,7 @@ __global__ void transposeNaive(float *in, float *out, int rows, int cols) {
     int y = blockIdx.y * blockDim.y + threadIdx.y;
 
     if (x < cols && y < rows) {
-        // strided write (atlamalı yazma) - slow 
+        // strided write  - slow 
         out[x * rows + y] = in[y * cols + x];
     }
 }
